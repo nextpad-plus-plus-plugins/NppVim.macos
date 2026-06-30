@@ -1,0 +1,36 @@
+#pragma once
+
+#include "NppVim.h"
+#include "Keymap.h"
+#include "Motion.h"
+#include "WinShim.h"
+
+class NormalMode {
+public:
+    NormalMode(VimState& state);
+    
+    void enter();
+    void handleKey(HWND hwnd, char c);
+    void enterInsertMode();
+    
+private:
+    VimState& state;
+    Motion motion;
+    
+    void setupKeyMaps();
+    
+    void deleteLineOnce(HWND hwnd);
+    void yankLineOnce(HWND hwnd);
+    void applyOperatorToMotion(HWND hwnd, char op, char motion, int count);
+
+    void handlePasteFromRegister(HWND hwnd, char pasteCmd, char reg);
+    void handleDeleteCharToRegister(HWND hwnd, char deleteCmd, char reg);
+
+    void handleCharSearchInput(HWND hwnd, char searchChar, char searchType, int count);
+    void handleMarkSetInput(HWND hwnd, char mark);
+    void handleMarkJumpInput(HWND hwnd, char mark, bool exactPosition);
+    void handleReplaceInput(HWND hwnd, char replaceChar);
+    void gotoDefinition(HWND h, VimState& state, bool applyOp);
+};
+
+extern NormalMode* g_normalMode;
