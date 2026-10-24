@@ -15,6 +15,44 @@ int Utils::sci(HWND h, int msg, WPARAM w, LPARAM l) {
     return (int)NppVim_send(h, msg, w, l);
 }
 
+// ── ID slot resolution (see Utils.h) ─────────────────────────────────────
+// Resolved lazily on first use, once. On remapped hosts, allocation failure
+// (pool exhausted) falls back to the legacy numbers — any fixed number can
+// collide at that point, and the legacy ones at least match the shipped
+// behavior.
+namespace {
+struct VimSlots {
+    int subMatch = 20, subRepl = 21;   // legacy indicator defaults
+    int localMk  = 20, globalMk = 21;  // legacy marker defaults
+};
+}
+static const VimSlots &resolvedSlots(const NppData &npp) {
+    static VimSlots s;
+    static bool resolved = false;
+    if (resolved) return s;
+    resolved = true;
+    if (NppVim_send(npp._nppHandle, NPPM_GETBOOKMARKID, 0, 0) == 20) {
+        int ind = -1;
+        if (NppVim_send(npp._nppHandle, NPPM_ALLOCATEINDICATOR, 2, (LPARAM)&ind) && ind > 0) {
+            s.subMatch = ind;
+            s.subRepl  = ind + 1;
+        } else {
+            s.subMatch = 27;           // the one unowned slot in the new layout
+            s.subRepl  = 20;           // inside the plugin pool; last resort
+        }
+        int mk = -1;
+        if (NppVim_send(npp._nppHandle, NPPM_ALLOCATEMARKER, 2, (LPARAM)&mk) && mk > 0) {
+            s.localMk  = mk;
+            s.globalMk = mk + 1;
+        }
+    }
+    return s;
+}
+int Utils::subMatchIndicator()  { return resolvedSlots(nppData).subMatch; }
+int Utils::subReplIndicator()   { return resolvedSlots(nppData).subRepl; }
+int Utils::localMarkMarker()    { return resolvedSlots(nppData).localMk; }
+int Utils::globalMarkMarker()   { return resolvedSlots(nppData).globalMk; }
+
 HWND Utils::getCurrentScintillaHandle()
 {
   int which = 0;

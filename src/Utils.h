@@ -90,6 +90,17 @@ public:
     static void rot13(HWND hwnd, int start, int end);
     static int sci(HWND h, int msg, WPARAM w = 0, LPARAM l = 0);
 
+    // Scintilla ID slots, resolved once against the running host.
+    // Legacy hosts (NPPM_GETBOOKMARKID == 24) keep the shipped hardcoded
+    // numbers (indicators 20/21, markers 20/21). Hosts with the remapped
+    // Windows-parity ID layout (GETBOOKMARKID == 20) own those numbers
+    // (mark style 5 / bookmark / change history), so there the slots come
+    // from NPPM_ALLOCATEINDICATOR / NPPM_ALLOCATEMARKER instead.
+    static int subMatchIndicator();   // :s preview — matched text
+    static int subReplIndicator();    // :s preview — replacement text
+    static int localMarkMarker();     // vim marks a-z
+    static int globalMarkMarker();    // vim marks A-Z
+
   private:
     static NppData nppData;
     friend void setNppData(NppData data);

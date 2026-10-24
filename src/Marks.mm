@@ -16,14 +16,15 @@ MarkInfo Marks::lastChangeMark;
 void Marks::initializeMarkers(HWND hwndEdit) {
     if (!hwndEdit) return;
 
-    // Local marks (a-z): Marker 20 - Small circle
-    int localMarkerNum = 20;
+    // Local marks (a-z): small circle (marker 20 on legacy hosts,
+    // NPPM_ALLOCATEMARKER slot on remapped hosts — see Utils.h)
+    int localMarkerNum = Utils::localMarkMarker();
     NppVim_send(hwndEdit, SCI_MARKERDEFINE, localMarkerNum, SC_MARK_CIRCLE);
     NppVim_send(hwndEdit, SCI_MARKERSETFORE, localMarkerNum, RGB(0, 0, 255)); // Blue
     NppVim_send(hwndEdit, SCI_MARKERSETBACK, localMarkerNum, RGB(255, 255, 255));
 
-    // Global marks (A-Z): Marker 21 - Small rectangle  
-    int globalMarkerNum = 21;
+    // Global marks (A-Z): small rectangle
+    int globalMarkerNum = Utils::globalMarkMarker();
     NppVim_send(hwndEdit, SCI_MARKERDEFINE, globalMarkerNum, SC_MARK_SMALLRECT);
     NppVim_send(hwndEdit, SCI_MARKERSETFORE, globalMarkerNum, RGB(255, 0, 0)); // Red
     NppVim_send(hwndEdit, SCI_MARKERSETBACK, globalMarkerNum, RGB(255, 255, 255));
@@ -44,10 +45,10 @@ bool Marks::isValidMark(char mark) {
 
 int Marks::getMarkerNumber(char mark) {
     if (mark >= 'a' && mark <= 'z') {
-        return 20; // Circle marker for local marks
+        return Utils::localMarkMarker(); // circle marker for local marks
     }
     else if (mark >= 'A' && mark <= 'Z') {
-        return 21; // Rectangle marker for global marks
+        return Utils::globalMarkMarker(); // rectangle marker for global marks
     }
     return -1;
 }
@@ -250,8 +251,8 @@ void Marks::deleteMark(HWND hwndEdit, char mark) {
 void Marks::clearAllMarks(HWND hwndEdit) {
     if (hwndEdit) {
         // Clear all markers from the editor
-        NppVim_send(hwndEdit, SCI_MARKERDELETEALL, 20, 0);
-        NppVim_send(hwndEdit, SCI_MARKERDELETEALL, 21, 0);
+        NppVim_send(hwndEdit, SCI_MARKERDELETEALL, Utils::localMarkMarker(), 0);
+        NppVim_send(hwndEdit, SCI_MARKERDELETEALL, Utils::globalMarkMarker(), 0);
     }
 
     localMarks.clear();

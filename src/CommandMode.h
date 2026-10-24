@@ -3,8 +3,10 @@
 #include "WinShim.h"
 #include <string>
 
-#define IND_SUB_MATCH    20
-#define IND_SUB_REPL     21
+// Host-layout-aware slots (legacy hosts: 20/21) — see Utils.h.
+#include "Utils.h"
+#define IND_SUB_MATCH    (Utils::subMatchIndicator())
+#define IND_SUB_REPL     (Utils::subReplIndicator())
 
 class CommandMode {
 public:
